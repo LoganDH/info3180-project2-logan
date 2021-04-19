@@ -104,6 +104,11 @@ def login():
             username = form.username.data
             password = form.password.data
 
+            user = user.query.filter_by(username=username).first()
+
+            if user is not None and check_password_hash(user.password, password):
+                login_user(user)
+
             message = '{0} Successfully Logged In.'.format(username)
 
             login = {
@@ -123,8 +128,9 @@ def login():
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     if request.method == 'POST':
-        #logout_user()
-        return 3
+        logout_user()
+    return redirect(url_for("home"))
+        
 
 
 #Return all cars ['GET'] or add new cars ['POST'].
@@ -171,9 +177,10 @@ def cars():
 #Get Details of a specific car.
 #HTTP Method: 'GET'
 @app.route('/api/cars/<car_id>', methods=['GET'])
-def get_car():
+def get_car(carid):
     if request.method == 'GET':
-        return 6
+        cars = db.session.query(cars).filter(cars.id ==carid).first()
+    return render_template('carsById.html', cars=cars)
 
 
 #Add car to Favourites for logged in user.
@@ -187,9 +194,9 @@ def add_favourite():
 #Search for cars by make or model.
 #HTTP Method: 'GET'
 @app.route('/api/search', methods=['GET'])
-def search():
+def search(carmake, carmodel):
     if request.method == 'GET':
-        return 8
+        cars = db.session.query(cars).filter(cars.make or cars.model == carmake or carmodel).first()
 
 
 #Get Details of a user.
